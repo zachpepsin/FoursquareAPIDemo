@@ -1,4 +1,13 @@
 <resources>
-    <string name="app_name">FoursquareAPIDemo</string>
-    <string name="title_item_detail">Item Detail</string>
+    <string name="app_name">Foursquare API Demo</string>
+    <string name="title_venue_list">Venues</string>
+    <string name="title_item_detail">Venue Detail</string>
+
+    <string name="dialog_header_venue_search">Search for a venue</string>
+    <string name="reset">Reset</string>
+
+    <string name="hint_venue_search">Venue name</string>
+    <string name="no_description">No description</string>
+    <string name="text_venues_recycler_empty">No venues found</string>
+    <string name="text_no_network_connection">Unable to establish a network connection.\nConnect to the internet to proceed.</string>
 </resources>
