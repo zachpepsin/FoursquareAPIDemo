@@ -177,7 +177,7 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_location -> {
-                // User selected the location option.  Display the location dialog
+                // User selected the location option.  Launch the LocationDialogFragment
                 val locationDialogFragment = LocationDialogFragment()
                 locationDialogFragment.show(supportFragmentManager, "location_dialog_fragment")
                 true
@@ -191,6 +191,7 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
     // defined by the LocationDialogFragment.SelectionListener interface
     override fun onDialogPositiveClick(dialog: DialogFragment) {
         // User touched the dialog's positive button
+        // TODO Get selected location and perform a new search
     }
 
     override fun onDialogNegativeClick(dialog: DialogFragment) {
