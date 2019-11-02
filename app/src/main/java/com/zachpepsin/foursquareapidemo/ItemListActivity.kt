@@ -46,8 +46,8 @@ class ItemListActivity : AppCompatActivity() {
     // Number of items before the bottom we have to reach when scrolling to start loading next page
     private val visibleThreshold = 2
 
-    // Number of venues to load per page (max of 50 per Foursquare API)
-    private val itemsPerPageLoad = 25
+    // Number of venues to load per page (max of 50 per Foursquare API docs)
+    private val itemsPerPageLoad = 50
 
     private var pagesLoaded = 1
 
