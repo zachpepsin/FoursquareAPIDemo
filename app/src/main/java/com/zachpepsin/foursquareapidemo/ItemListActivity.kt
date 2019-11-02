@@ -303,19 +303,19 @@ class ItemListActivity : AppCompatActivity() {
             val item = values[position]
             holder.textName.text = item.name
 
-            // TODO Vanue description or secondary text
+            // TODO Venue description or secondary text
             /*
             if (item.description != "null")
                 holder.textDescription.text = item.description
             else {
                 holder.textDescription.text = parentActivity.getString(R.string.no_description)
             }
+             */
 
             with(holder.itemView) {
                 tag = item
                 setOnClickListener(onClickListener)
             }
-             */
         }
 
         override fun getItemCount() = values.size

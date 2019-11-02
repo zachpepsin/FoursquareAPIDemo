@@ -36,7 +36,7 @@ class ItemDetailFragment : Fragment() {
                 venueName = it.getString(ARG_VENUE_NAME)
                 activity?.toolbar_layout?.title = venueName
             } else {
-                // A repo name was not passed into the fragment
+                // A venue name was not passed into the fragment
                 Log.w(ItemDetailActivity::class.java.simpleName, "Venue ID not supplied")
                 onDestroy()
             }
