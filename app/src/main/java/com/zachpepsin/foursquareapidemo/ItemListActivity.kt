@@ -302,15 +302,13 @@ class ItemListActivity : AppCompatActivity() {
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val item = values[position]
             holder.textName.text = item.name
+            holder.textName.text = item.name
 
-            // TODO Venue description or secondary text
-            /*
-            if (item.description != "null")
-                holder.textDescription.text = item.description
+            if (item.address.isNotBlank())
+                holder.textAddress.text = item.address
             else {
-                holder.textDescription.text = parentActivity.getString(R.string.no_description)
+                holder.textAddress.text = parentActivity.getString(R.string.no_address)
             }
-             */
 
             with(holder.itemView) {
                 tag = item
@@ -322,7 +320,7 @@ class ItemListActivity : AppCompatActivity() {
 
         inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val textName: TextView = view.text_name
-            //val textDescription: TextView = view.text_description // TODO Venue description
+            val textAddress: TextView = view.text_address
         }
     }
 
@@ -339,9 +337,17 @@ class ItemListActivity : AppCompatActivity() {
 
             for (i in 0 until venueJSONArray.length()) {
                 val jsonVenue = venueJSONArray.getJSONObject(i)
+
+                // Get the address out of the location object if there is one
+                var address = String()
+                if (!jsonVenue.isNull("location") && !jsonVenue.getJSONObject("location").isNull("address")) {
+                    address = jsonVenue.getJSONObject("location").getString("address")
+                }
+
                 dataset.addItem(
                     jsonVenue.getString("id"),
-                    jsonVenue.getString("name")
+                    jsonVenue.getString("name"),
+                    address
                 )
             }
             return "temp"

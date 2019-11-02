@@ -13,8 +13,8 @@ class Venues {
      */
     private val itemMap: MutableMap<String, VenueItem> = HashMap()
 
-    fun addItem(id: String, name: String) {
-        val item = VenueItem(id, name)
+    fun addItem(id: String, name: String, address: String) {
+        val item = VenueItem(id, name, address)
         items.add(item)
         itemMap[item.id] = item
     }
@@ -24,7 +24,8 @@ class Venues {
      */
     data class VenueItem(
         val id: String,
-        val name: String
+        val name: String,
+        val address: String
     ) {
         override fun toString(): String = name
     }
