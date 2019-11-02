@@ -2,9 +2,9 @@ package com.zachpepsin.foursquareapidemo
 
 import android.content.Intent
 import android.os.Bundle
-import com.google.android.material.snackbar.Snackbar
-import androidx.appcompat.app.AppCompatActivity
 import android.view.MenuItem
+import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.android.synthetic.main.activity_item_detail.*
 
 /**
@@ -45,6 +45,10 @@ class ItemDetailActivity : AppCompatActivity() {
                     putString(
                         ItemDetailFragment.ARG_ITEM_ID,
                         intent.getStringExtra(ItemDetailFragment.ARG_ITEM_ID)
+                    )
+                    putString(
+                        ItemDetailFragment.ARG_VENUE_NAME,
+                        intent.getStringExtra(ItemDetailFragment.ARG_VENUE_NAME)
                     )
                 }
             }

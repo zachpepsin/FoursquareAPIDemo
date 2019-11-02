@@ -1,5 +1,6 @@
 package com.zachpepsin.foursquareapidemo
 
+import android.os.AsyncTask
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -7,8 +8,11 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import kotlinx.android.synthetic.main.activity_item_detail.*
+import kotlinx.android.synthetic.main.item_detail.*
 import kotlinx.android.synthetic.main.item_detail.view.*
-import okhttp3.OkHttpClient
+import okhttp3.*
+import org.json.JSONObject
+import java.io.IOException
 
 /**
  * A fragment representing a single Item detail screen.
@@ -17,9 +21,6 @@ import okhttp3.OkHttpClient
  * on handsets.
  */
 class ItemDetailFragment : Fragment() {
-
-    // The venue title this fragment is presenting.
-    private var item: Venues.VenueItem? = null
 
     private var venueId: String? = null
     private var venueName: String? = null
@@ -50,11 +51,56 @@ class ItemDetailFragment : Fragment() {
         val rootView = inflater.inflate(R.layout.item_detail, container, false)
 
         // Show the content as text in a TextView.
-        item?.let {
-            rootView.item_detail.text = it.name
-        }
+        rootView.item_detail.text = venueName
 
         return rootView
+    }
+
+    // Runs an API request
+    private fun run(url: String) {
+        val urlWithKeys =
+            "$url&client_id=${ItemListActivity.CLIENT_ID}&client_secret=${ItemListActivity.CLIENT_SECRET}&v=${ItemListActivity.API_VERSION}"
+        val request = Request.Builder()
+            .url(urlWithKeys)
+            .build()
+
+        client.newCall(request).enqueue(object : Callback {
+            override fun onFailure(call: Call, e: IOException) {
+                e.printStackTrace()
+                Log.e("Request Failed", e.message!!)
+            }
+
+            override fun onResponse(call: Call?, response: Response) {
+                val responseData = response.body()?.string()
+
+                LoadVenueDetails().execute(responseData)
+            }
+        })
+    }
+
+
+    inner class LoadVenueDetails : AsyncTask<String, Void, JSONObject>() {
+
+        override fun doInBackground(vararg params: String): JSONObject? {
+            val response = params[0]
+            if (response.isEmpty()) {
+                // We did not get a response
+                Log.e(ItemDetailActivity::class.java.simpleName, "No response")
+            }
+
+            return JSONObject(response).getJSONObject("response")
+        }
+
+        override fun onPostExecute(result: JSONObject) {
+            super.onPostExecute(result)
+
+            // Run activity view-related code back on the main thread
+            activity?.runOnUiThread {
+                // Hide the progress bar
+                progress_bar_venue_details.visibility = View.GONE
+            }
+
+        }
     }
 
     companion object {
