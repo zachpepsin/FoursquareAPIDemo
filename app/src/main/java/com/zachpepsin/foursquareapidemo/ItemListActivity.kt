@@ -7,11 +7,10 @@ import android.os.AsyncTask
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -31,7 +30,7 @@ import java.io.IOException
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-class ItemListActivity : AppCompatActivity() {
+class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionListener {
 
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
@@ -167,6 +166,35 @@ class ItemListActivity : AppCompatActivity() {
             val builder: NetworkRequest.Builder = NetworkRequest.Builder()
             connectivityManager.registerNetworkCallback(builder.build(), networkCallback)
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        val inflater: MenuInflater = menuInflater
+        inflater.inflate(R.menu.menu_item_list, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_location -> {
+                // User selected the location option.  Display the location dialog
+                val locationDialogFragment = LocationDialogFragment()
+                locationDialogFragment.show(supportFragmentManager, "location_dialog_fragment")
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    // The dialog fragment receives a reference to this Activity through the
+    // Fragment.onAttach() callback, which it uses to call the following methods
+    // defined by the LocationDialogFragment.SelectionListener interface
+    override fun onDialogPositiveClick(dialog: DialogFragment) {
+        // User touched the dialog's positive button
+    }
+
+    override fun onDialogNegativeClick(dialog: DialogFragment) {
+        // User touched the dialog's negative button
     }
 
     // Runs an API request
