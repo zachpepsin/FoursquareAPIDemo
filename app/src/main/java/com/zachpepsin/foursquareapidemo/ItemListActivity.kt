@@ -10,6 +10,7 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.view.*
+import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
@@ -71,10 +72,13 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
         setSupportActionBar(toolbar)
         toolbar.title = title
 
-
+        // Until we have internet confirmed, do not allow searches to be performed
         fab.setOnClickListener { view ->
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
+            Snackbar.make(
+                view,
+                getString(R.string.snackbar_internet_required),
+                Snackbar.LENGTH_LONG
+            ).show()
         }
 
         if (item_detail_container != null) {
@@ -107,7 +111,11 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
                 connectivityManager.unregisterNetworkCallback(this)
 
                 // We now have a network connection and can load the data
-                // This has to be run on the UI thread because the callback is on a different thread
+                // This has to be run on the UI
+                //        fab.setOnClickListener { view ->
+                //            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
+                //                .setAction("Action", null).show()
+                //        }thread because the callback is on a different thread
                 runOnUiThread {
                     // Hide the 'no connection' message and re-display the recycler
                     // Reset the text of it back to the 'no items found' message in case the view is
@@ -327,6 +335,9 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
     }
 
     private fun setupRecyclerView(recyclerView: RecyclerView) {
+        // Now that we have internet connection, also set up the FAB for searches
+        setupSearchFAB()
+
         recyclerView.adapter =
             VenueItemRecyclerViewAdapter(this, dataset.items, twoPane)
 
@@ -376,6 +387,49 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
                 }
             }
         })
+    }
+
+    private fun setupSearchFAB() {
+        fab.setOnClickListener {
+            // Show a dialog that allows the user to enter a search query
+            // Show dialog to enter search keywords
+            val builder = AlertDialog.Builder(this)
+                .setTitle(getString(R.string.dialog_header_venue_search))
+
+            val dialogView = layoutInflater.inflate(R.layout.dialog_venue_search, null)
+
+            val categoryEditText = dialogView.findViewById(R.id.venue_edit_text) as EditText
+
+            builder.setView(dialogView)
+                // Set up the search button
+                .setPositiveButton(android.R.string.ok) { dialog, _ ->
+                    encodedSearchText = URLEncoder.encode(categoryEditText.text.toString(), "UTF-8")
+                    if (encodedSearchText.isEmpty()) {
+                        // Don't do anything if no text was submitted
+                        dialog.dismiss()
+                    }
+                    pagesLoaded = 0 // New search, so reset number of pages loaded
+                    // Clear the recycler and prepare for a new list to populate it
+                    val itemCount = dataset.items.size
+                    dataset.items.clear()
+                    recycler_venues.adapter?.notifyItemRangeRemoved(0, itemCount)
+                    text_venues_recycler_empty.visibility = View.GONE
+
+                    runRequest()
+                }
+                .setNegativeButton(android.R.string.cancel) { dialog, _ ->
+                    // Cancel button
+                    dialog.cancel()
+                }
+                .setNeutralButton(getString(R.string.reset)) { _, _ ->
+                    // Reset button.  Perform non-search query
+                    setupRecyclerView(recycler_venues)
+                }
+            // Create the alert dialog using builder
+            val dialog: AlertDialog = builder.create()
+            // Display the dialog
+            dialog.show()
+        }
     }
 
     class VenueItemRecyclerViewAdapter(
