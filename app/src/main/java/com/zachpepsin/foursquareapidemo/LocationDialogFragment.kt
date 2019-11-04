@@ -2,15 +2,23 @@ package com.zachpepsin.foursquareapidemo
 
 import android.app.Dialog
 import android.content.Context
+import android.location.Geocoder
+import android.location.Location
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.dialog_location.view.*
+import java.util.*
+
 
 class LocationDialogFragment : DialogFragment() {
     // Use this instance of the interface to deliver action events
     private lateinit var listener: SelectionListener
+
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     /* The activity that creates an instance of this dialog fragment must
      * implement this interface in order to receive event callbacks.
@@ -42,8 +50,59 @@ class LocationDialogFragment : DialogFragment() {
             val inflater = requireActivity().layoutInflater
             val view = inflater.inflate(R.layout.dialog_location, null)
 
+            val context = activity!!.applicationContext
+            // Set up location client
+            fusedLocationClient =
+                LocationServices.getFusedLocationProviderClient(context)
+
             view.image_button_location.setOnClickListener {
-                Toast.makeText(context, "LOCATION BUTTON CLICKED", Toast.LENGTH_SHORT).show()
+                // Location button was clicked
+                fusedLocationClient.lastLocation
+                    .addOnSuccessListener { location: Location? ->
+                        // Got last known location. In some rare situations this can be null.
+                        if (location == null) {
+                            // We did not get a location
+                            Toast.makeText(context, "NULL LOCATION", Toast.LENGTH_SHORT).show()
+                            return@addOnSuccessListener
+                        }
+
+                        // Get the address, city, and state
+                        val geocoder = Geocoder(context, Locale.getDefault())
+                        val addresses =
+                            geocoder.getFromLocation(location.latitude, location.longitude, 1)
+                        /**
+                         * TODO Foursquare API is very particular about having valid address numbers
+                         * Unfortunately, the google lcoation callback is not and just gives it's
+                         * best estimate at a number.  To avoid failed
+                         * requests, just use city, state and zip.
+                         *
+                         * It would be better to use `ll` instead of `near` in the query and pass in
+                         * the Lat and Long returned to get the most accurate results
+                         */
+                        //val number = addresses[0].subThoroughfare
+                        //val street = addresses[0].thoroughfare
+                        val cityName = addresses[0].locality
+                        val stateName = addresses[0].adminArea
+                        val postalCode = addresses[0].postalCode
+
+                        // Build the string and set the EditText
+                        var locationString = ""
+                        //if(number != null ) locationString += number
+                        //if(street != null ) locationString += " $street"
+                        if (cityName != null) locationString += cityName
+                        if (stateName != null) locationString += ", $stateName"
+                        if (postalCode != null) locationString += " $postalCode"
+                        view.edit_text_location.setText(locationString)
+                        Toast.makeText(context, locationString, Toast.LENGTH_SHORT).show()
+                    }
+                    .addOnFailureListener {
+                        // We were not able to get location (possibly due to permissions)
+                        Toast.makeText(
+                            context,
+                            getString(R.string.location_failed),
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    }
             }
 
             // Use the Builder class for convenient dialog construction

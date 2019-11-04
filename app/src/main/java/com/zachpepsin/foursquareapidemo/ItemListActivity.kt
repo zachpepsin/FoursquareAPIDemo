@@ -9,6 +9,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.DividerItemDecoration
@@ -22,6 +23,7 @@ import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
 import java.net.URLEncoder
+import kotlin.math.min
 
 /**
  * An activity representing a list of Pings. This activity
@@ -61,6 +63,7 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
 
         setSupportActionBar(toolbar)
         toolbar.title = title
+
 
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
@@ -201,8 +204,9 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
         pagesLoaded = 0 // Reset number of pages because this is a new search
 
         // Clear the dataset and recycler
+        val numItems = dataset.items.size
         dataset.items.clear()
-        recycler_venues.adapter!!.notifyItemRangeRemoved(0, dataset.items.size - 1)
+        recycler_venues.adapter?.notifyItemRangeRemoved(0, numItems)
 
         // Encode the location text for the request
         encodedLocation = URLEncoder.encode(locationText, "UTF-8")
@@ -218,7 +222,7 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
     // Runs an API request
     private fun runRequest() {
         val url =
-            "https://api.foursquare.com/v2/venues/search?page=${pagesLoaded+1}&per_page=$itemsPerPageLoad&client_id=$CLIENT_ID&client_secret=$CLIENT_SECRET&v=$API_VERSION&near=$encodedLocation&query=$encodedSearchText"
+            "https://api.foursquare.com/v2/venues/search?page=${pagesLoaded + 1}&per_page=$itemsPerPageLoad&client_id=$CLIENT_ID&client_secret=$CLIENT_SECRET&v=$API_VERSION&near=$encodedLocation&query=$encodedSearchText"
         val request = Request.Builder()
             .url(url)
             .build()
@@ -363,9 +367,13 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
 
         override fun doInBackground(vararg params: String): String? {
             val response = params[0]
-            if (response.isEmpty()) {
+            if (response.isEmpty() || JSONObject(response).isNull("response") || JSONObject(response).getJSONObject(
+                    "response"
+                ).isNull("venues")
+            ) {
                 // We did not get a response
                 Log.e(ItemDetailActivity::class.java.simpleName, "No response")
+                return null
             }
             val venueJSONArray =
                 JSONObject(response).getJSONObject("response").getJSONArray("venues")
@@ -391,9 +399,24 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
         override fun onPostExecute(result: String?) {
             super.onPostExecute(result)
 
+            if (result == null) {
+                // Request failed
+                Toast.makeText(
+                    this@ItemListActivity,
+                    getString(R.string.search_failed),
+                    Toast.LENGTH_SHORT
+                ).show()
+                dataset.items.clear()
+                recycler_venues.adapter?.notifyDataSetChanged()
+                pagesLoaded = 0
+                isPageLoading = false // We are done loading the page
+                progress_bar_venues_page.visibility = View.GONE
+                return
+            }
+
             // Get the range of items added to notify the dataset how many items were added
             val firstItemAdded = (pagesLoaded) * itemsPerPageLoad
-            val lastItemAdded = ((pagesLoaded + 1) * itemsPerPageLoad) - 1
+            val lastItemAdded = min( ((pagesLoaded + 1) * itemsPerPageLoad), dataset.items.size) - 1
 
             // Check to make sure we still have this view, since the activity could be destroyed
             if (recycler_venues != null) {

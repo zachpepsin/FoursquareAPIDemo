@@ -3,8 +3,11 @@
     <string name="title_venue_list">Venues</string>
     <string name="title_item_detail">Venue Detail</string>
 
+    <string name="search_failed">Search failed</string>
+
     <string name="set_location">Set location</string>
     <string name="hint_location">Address, City, or ZIP</string>
+    <string name="location_failed">Unable to retrieve location</string>
 
     <string name="dialog_header_venue_search">Search for a venue</string>
     <string name="reset">Reset</string>
