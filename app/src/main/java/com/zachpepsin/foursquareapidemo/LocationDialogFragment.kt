@@ -16,7 +16,7 @@ class LocationDialogFragment : DialogFragment() {
      * implement this interface in order to receive event callbacks.
      * Each method passes the DialogFragment in case the host needs to query it. */
     interface SelectionListener {
-        fun onDialogPositiveClick(dialog: DialogFragment)
+        fun onDialogPositiveClick(locationText: String)
         fun onDialogNegativeClick(dialog: DialogFragment)
     }
 
@@ -54,7 +54,7 @@ class LocationDialogFragment : DialogFragment() {
                 .setMessage(R.string.set_location)
                 .setPositiveButton(android.R.string.ok) { _, _ ->
                     // Send the positive button event back to the host activity
-                    listener.onDialogPositiveClick(this)
+                    listener.onDialogPositiveClick(view.edit_text_location.text.toString())
                 }
                 .setNegativeButton(android.R.string.cancel) { _, _ ->
                     // Send the negative button event back to the host activity

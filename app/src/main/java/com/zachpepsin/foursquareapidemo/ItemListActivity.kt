@@ -21,6 +21,7 @@ import kotlinx.android.synthetic.main.item_list_content.view.*
 import okhttp3.*
 import org.json.JSONObject
 import java.io.IOException
+import java.net.URLEncoder
 
 /**
  * An activity representing a list of Pings. This activity
@@ -39,8 +40,8 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
     private var twoPane: Boolean = false
 
     private var isPageLoading = false // If a new page of items is currently being loaded
-    private var isSearchPerformed = false
-    private var encodedSearchText: String = ""
+    private var encodedSearchText: String = "" // By default do not use search keywords
+    private var encodedLocation = "Philadelphia%2C%20PA" // Default search location is Philadelphia
 
     // Number of items before the bottom we have to reach when scrolling to start loading next page
     private val visibleThreshold = 2
@@ -48,7 +49,7 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
     // Number of venues to load per page (max of 50 per Foursquare API docs)
     private val itemsPerPageLoad = 50
 
-    private var pagesLoaded = 1
+    private var pagesLoaded = 0
 
     var dataset = Venues()
 
@@ -189,9 +190,25 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
     // The dialog fragment receives a reference to this Activity through the
     // Fragment.onAttach() callback, which it uses to call the following methods
     // defined by the LocationDialogFragment.SelectionListener interface
-    override fun onDialogPositiveClick(dialog: DialogFragment) {
+    override fun onDialogPositiveClick(locationText: String) {
         // User touched the dialog's positive button
-        // TODO Get selected location and perform a new search
+
+        if (locationText.isBlank()) {
+            // No location was entered
+            return
+        }
+
+        pagesLoaded = 0 // Reset number of pages because this is a new search
+
+        // Clear the dataset and recycler
+        dataset.items.clear()
+        recycler_venues.adapter!!.notifyItemRangeRemoved(0, dataset.items.size - 1)
+
+        // Encode the location text for the request
+        encodedLocation = URLEncoder.encode(locationText, "UTF-8")
+
+        // Perform the request
+        runRequest()
     }
 
     override fun onDialogNegativeClick(dialog: DialogFragment) {
@@ -199,10 +216,11 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
     }
 
     // Runs an API request
-    private fun run(url: String) {
-        val urlWithKeys = "$url&client_id=$CLIENT_ID&client_secret=$CLIENT_SECRET&v=$API_VERSION"
+    private fun runRequest() {
+        val url =
+            "https://api.foursquare.com/v2/venues/search?page=${pagesLoaded+1}&per_page=$itemsPerPageLoad&client_id=$CLIENT_ID&client_secret=$CLIENT_SECRET&v=$API_VERSION&near=$encodedLocation&query=$encodedSearchText"
         val request = Request.Builder()
-            .url(urlWithKeys)
+            .url(url)
             .build()
 
         client.newCall(request).enqueue(object : Callback {
@@ -213,14 +231,8 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
 
             override fun onResponse(call: Call?, response: Response) {
                 val responseData = response.body()?.string()
-                if (!isSearchPerformed) {
-                    // We are not performing a search, just loading a page of venues
-                    LoadVenues().execute(responseData)
-                } else {
-                    // We did perform a search
-                    // TODO Perform Search
-                    //LoadVenuesSearch().execute(responseData)
-                }
+                // Load a page of venues with the response data
+                LoadVenues().execute(responseData)
 
                 // Run view-related code back on the main thread
                 runOnUiThread {
@@ -237,7 +249,7 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
 
         progress_bar_venues_center.visibility = View.VISIBLE  // Display the main progress bar
 
-        pagesLoaded = 1
+        pagesLoaded = 0
         dataset.items.clear()
 
         // Add divider for recycler
@@ -248,7 +260,7 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
         recyclerView.addItemDecoration(dividerItemDecoration)
 
         // Execute HTTP Request to load first batch of venues
-        run("https://api.foursquare.com/v2/venues/search?page=$pagesLoaded&per_page=$itemsPerPageLoad")
+        runRequest()
 
         // Add scroll listener to detect when the end of the list has been reached
         recyclerView.addOnScrollListener(object : RecyclerView.OnScrollListener() {
@@ -270,13 +282,7 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
                     // Iterate the pages loaded counter so we load the next page
                     pagesLoaded++
 
-                    if (!isSearchPerformed) {
-                        run("https://api.foursquare.com/v2/venues/search?page=$pagesLoaded&per_page=$itemsPerPageLoad")
-                    } else {
-                        // If we have less search results than however many we tried to load by now,
-                        // Then we are at the end of the list of results
-                        run("https://api.foursquare.com/v2/venues/search?query=$encodedSearchText&page=$pagesLoaded&per_page=$itemsPerPageLoad")
-                    }
+                    runRequest()
                 }
 
                 // Hide FAB when scrolling down, show when scrolling up
@@ -386,8 +392,8 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
             super.onPostExecute(result)
 
             // Get the range of items added to notify the dataset how many items were added
-            val firstItemAdded = (pagesLoaded - 1) * itemsPerPageLoad
-            val lastItemAdded = ((pagesLoaded) * itemsPerPageLoad) - 1
+            val firstItemAdded = (pagesLoaded) * itemsPerPageLoad
+            val lastItemAdded = ((pagesLoaded + 1) * itemsPerPageLoad) - 1
 
             // Check to make sure we still have this view, since the activity could be destroyed
             if (recycler_venues != null) {
@@ -415,7 +421,6 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
     companion object {
         const val CLIENT_ID = "OOYBRQQXO2OTWQFHTUSQTX1PLXKRL0L3JW20M1ZQDT0QMFMM"
         const val CLIENT_SECRET = "E0ME4WKBZQCM34DX4MVB2AHWFK1GKW2AUR1OC13YYHPV5CQU"
-        const val API_VERSION =
-            "20191101&near=Philadelphia%2C%20PA" //TODO set up location instead of using here
+        const val API_VERSION = "20191101"
     }
 }

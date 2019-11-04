@@ -9,7 +9,7 @@
         android:id="@+id/edit_text_location"
         android:layout_width="0dp"
         android:layout_height="match_parent"
-        android:hint="@string/set_location"
+        android:hint="@string/hint_location"
         android:inputType="textEmailAddress"
         android:autofillHints="AUTOFILL_HINT_POSTAL_ADDRESS"
         app:layout_constraintBottom_toBottomOf="parent"
