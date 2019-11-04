@@ -5,6 +5,7 @@ import android.content.Context
 import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.DialogFragment
@@ -55,6 +56,13 @@ class LocationDialogFragment : DialogFragment() {
             fusedLocationClient =
                 LocationServices.getFusedLocationProviderClient(context)
 
+
+            // Hide the location button if location permissions are not granted
+            if (arguments == null || !arguments!!.getBoolean("isLocationGranted")) {
+                view.image_button_location.isEnabled = false
+                view.image_button_location.visibility = View.GONE
+            }
+
             view.image_button_location.setOnClickListener {
                 // Location button was clicked
                 fusedLocationClient.lastLocation
@@ -72,7 +80,7 @@ class LocationDialogFragment : DialogFragment() {
                             geocoder.getFromLocation(location.latitude, location.longitude, 1)
                         /**
                          * TODO Foursquare API is very particular about having valid address numbers
-                         * Unfortunately, the google lcoation callback is not and just gives it's
+                         * Unfortunately, the google location callback is not and just gives it's
                          * best estimate at a number.  To avoid failed
                          * requests, just use city, state and zip.
                          *

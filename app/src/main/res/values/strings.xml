@@ -8,6 +8,8 @@
     <string name="set_location">Set location</string>
     <string name="hint_location">Address, City, or ZIP</string>
     <string name="location_failed">Unable to retrieve location</string>
+    <string name="dialog_permission_location">Location access is recommended to list nearby venues</string>
+    <string name="permission_rationale_location">Location access is recommended to use your location to list nearby venues</string>
 
     <string name="dialog_header_venue_search">Search for a venue</string>
     <string name="reset">Reset</string>

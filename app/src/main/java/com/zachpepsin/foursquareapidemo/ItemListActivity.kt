@@ -1,7 +1,9 @@
 package com.zachpepsin.foursquareapidemo
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.*
 import android.os.AsyncTask
 import android.os.Build
@@ -10,7 +12,10 @@ import android.util.Log
 import android.view.*
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -44,6 +49,8 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
     private var isPageLoading = false // If a new page of items is currently being loaded
     private var encodedSearchText: String = "" // By default do not use search keywords
     private var encodedLocation = "Philadelphia%2C%20PA" // Default search location is Philadelphia
+
+    private val PERMISSION_LOCATION = 100
 
     // Number of items before the bottom we have to reach when scrolling to start loading next page
     private val visibleThreshold = 2
@@ -181,12 +188,84 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_location -> {
-                // User selected the location option.  Launch the LocationDialogFragment
-                val locationDialogFragment = LocationDialogFragment()
-                locationDialogFragment.show(supportFragmentManager, "location_dialog_fragment")
+                // User selected the location option.
+                // Check for location permissions
+                requestLocationPermission()
                 true
             }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun requestLocationPermission() {
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            )
+            != PackageManager.PERMISSION_GRANTED
+        ) {
+            // Permission is not granted
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(
+                    this,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                )
+            ) {
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+                val builder = AlertDialog.Builder(this)
+                builder.setMessage(R.string.dialog_permission_location)
+                    .setPositiveButton(android.R.string.ok) { _, _ ->
+                        ActivityCompat.requestPermissions(
+                            this,
+                            arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                            PERMISSION_LOCATION
+                        )
+                    }
+                builder.create().show() // Show dialog
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(
+                    this,
+                    arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
+                    PERMISSION_LOCATION
+                )
+            }
+        } else {
+            // We already have location permissions
+            // Launch the LocationDialogFragment
+            val locationDialogFragment = LocationDialogFragment()
+            val args = Bundle()
+            args.putBoolean("isLocationGranted", true)
+            locationDialogFragment.arguments = args
+            locationDialogFragment.show(supportFragmentManager, "location_dialog_fragment")
+        }
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>, grantResults: IntArray
+    ) {
+        when (requestCode) {
+            PERMISSION_LOCATION -> {
+                // If request is cancelled, the result arrays are empty.
+                // Let the LocationDialogFragment know if permissions are granted
+                val permissionGranted =
+                    ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED))
+                val locationDialogFragment = LocationDialogFragment()
+                val args = Bundle()
+                args.putBoolean("isLocationGranted", permissionGranted)
+                locationDialogFragment.arguments = args
+                locationDialogFragment.show(supportFragmentManager, "location_dialog_fragment")
+                return
+            }
+
+            // Add other 'when' lines to check for other
+            // permissions this app might request.
+            else -> {
+                // Ignore all other requests.
+            }
         }
     }
 
@@ -416,7 +495,7 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
 
             // Get the range of items added to notify the dataset how many items were added
             val firstItemAdded = (pagesLoaded) * itemsPerPageLoad
-            val lastItemAdded = min( ((pagesLoaded + 1) * itemsPerPageLoad), dataset.items.size) - 1
+            val lastItemAdded = min(((pagesLoaded + 1) * itemsPerPageLoad), dataset.items.size) - 1
 
             // Check to make sure we still have this view, since the activity could be destroyed
             if (recycler_venues != null) {
