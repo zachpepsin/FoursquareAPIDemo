@@ -9,7 +9,6 @@
     android:layout_marginRight="16dp"
     android:orientation="vertical">
 
-
     <TextView
         android:id="@+id/text_address_header"
         android:layout_width="wrap_content"
@@ -24,20 +23,12 @@
         android:id="@+id/text_address_street"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:maxLines="4"
         android:textColor="?android:attr/textColorSecondary"
         android:textSize="15sp"
         app:layout_constraintStart_toStartOf="@id/text_address_header"
         app:layout_constraintTop_toBottomOf="@id/text_address_header"
-        tools:text="123 Market Street" />
-
-    <TextView
-        android:id="@+id/text_address_city_state"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textSize="15sp"
-        app:layout_constraintStart_toStartOf="@id/text_address_header"
-        app:layout_constraintTop_toBottomOf="@id/text_address_street"
-        tools:text="State, XX" />
+        tools:text="123 Market Street\nPhiladelphia, PA\nUSA" />
 
     <ProgressBar
         android:id="@+id/progress_bar_venue_details"
