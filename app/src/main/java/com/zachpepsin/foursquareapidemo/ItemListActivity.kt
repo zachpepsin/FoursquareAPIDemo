@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.graphics.drawable.BitmapDrawable
 import android.net.*
 import android.os.AsyncTask
@@ -546,7 +547,12 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
                 val iconJSON = categoryJSON.getJSONObject("icon")
                 val prefix = iconJSON.getString("prefix")
                 val suffix = iconJSON.getString("suffix")
-                val imgUrl = "${prefix}100${suffix}"
+                // If we are in light theme, we need a grey background for the icon
+                val imgUrl = when (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES) {
+                    true -> "${prefix}100${suffix}" // Dark mode
+                    false -> "${prefix}bg_100${suffix}" // Light mode
+                }
+
                 val bitmap = Picasso.with(this@ItemListActivity).load(imgUrl).get()
                 dataset.addItem(
                     jsonVenue.getString("id"),
