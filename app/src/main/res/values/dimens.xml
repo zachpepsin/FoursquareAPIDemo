@@ -4,4 +4,7 @@
     <dimen name="app_bar_height">200dp</dimen>
     <dimen name="item_width">200dp</dimen>
     <dimen name="text_margin">16dp</dimen>
+
+    <dimen name="text_size_venue_detail_header">18sp</dimen>
+    <dimen name="text_size_venue_detail_body">15sp</dimen>
 </resources>

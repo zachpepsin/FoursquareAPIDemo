@@ -19,10 +19,12 @@
     <string name="hint_venue_search">Venue name</string>
     <string name="no_address">No address</string>
     <string name="no_hours">No hours listed</string>
+    <string name="no_description">No description</string>
     <string name="text_venues_recycler_empty">No venues found</string>
     <string name="text_no_network_connection">Unable to establish a network connection.\nConnect to the internet to proceed.</string>
 
     <string name="header_address">Address</string>
-    <string name="header_hours">Hours Today</string>
+    <string name="header_hours">Hours</string>
     <string name="header_rating">Rating</string>
+    <string name="header_description">Description</string>
 </resources>

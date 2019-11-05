@@ -197,6 +197,14 @@ class ItemDetailFragment : Fragment() {
                 rating_venue.rating = venueJSON.getDouble("rating").toFloat()
             }
 
+            // Description
+            if (venueJSON.isNull("description")) {
+                // No description provided
+                text_description_body.text = getString(R.string.no_description)
+            } else {
+                text_description_body.text = venueJSON.getString("description")
+            }
+
             // Run activity view-related code back on the main thread
             activity?.runOnUiThread {
                 // Hide the progress bar
