@@ -17,7 +17,6 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.fragment.app.DialogFragment
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -50,6 +49,7 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
     private var isPageLoading = false // If a new page of items is currently being loaded
     private var encodedSearchText: String = "" // By default do not use search keywords
     private var encodedLocation = "Philadelphia%2C%20PA" // Default search location is Philadelphia
+    private var isLatLong = false // True if we are searching by LatLong rather than keywords
 
     private val PERMISSION_LOCATION = 100
 
@@ -280,14 +280,14 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
     // The dialog fragment receives a reference to this Activity through the
     // Fragment.onAttach() callback, which it uses to call the following methods
     // defined by the LocationDialogFragment.SelectionListener interface
-    override fun onDialogPositiveClick(locationText: String) {
+    override fun onDialogPositiveClick(locationText: String, latLong: Boolean) {
         // User touched the dialog's positive button
 
         if (locationText.isBlank()) {
             // No location was entered
             return
         }
-
+        isLatLong = latLong // Keep track of if we are searching using Lat/Long
         pagesLoaded = 0 // Reset number of pages because this is a new search
 
         // Clear the dataset and recycler
@@ -302,14 +302,16 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
         runRequest()
     }
 
-    override fun onDialogNegativeClick(dialog: DialogFragment) {
-        // User touched the dialog's negative button
-    }
-
     // Runs an API request
     private fun runRequest() {
-        val url =
-            "https://api.foursquare.com/v2/venues/search?page=${pagesLoaded + 1}&per_page=$itemsPerPageLoad&client_id=$CLIENT_ID&client_secret=$CLIENT_SECRET&v=$API_VERSION&near=$encodedLocation&query=$encodedSearchText"
+        var url =
+            "https://api.foursquare.com/v2/venues/search?page=${pagesLoaded + 1}&per_page=$itemsPerPageLoad&client_id=$CLIENT_ID&client_secret=$CLIENT_SECRET&v=$API_VERSION&query=$encodedSearchText"
+
+        // Use either ll for lat/long or near for location keywords
+        url += when (isLatLong) {
+            true -> "&ll=$encodedLocation"
+            false -> "&near=$encodedLocation"
+        }
         val request = Request.Builder()
             .url(url)
             .build()
@@ -345,6 +347,7 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
 
         pagesLoaded = 0
         dataset.items.clear()
+        isLatLong = false
 
         // Add divider for recycler
         val dividerItemDecoration = DividerItemDecoration(
@@ -518,6 +521,13 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
                 var address = String()
                 if (!jsonVenue.isNull("location") && !jsonVenue.getJSONObject("location").isNull("address")) {
                     address = jsonVenue.getJSONObject("location").getString("address")
+
+                    // Also add distance
+                    if (!jsonVenue.getJSONObject("location").isNull("distance")) {
+                        address += ", ${jsonVenue.getJSONObject("location").getString("distance")} ${getString(
+                            R.string.meters
+                        )}"
+                    }
                 }
 
                 dataset.addItem(

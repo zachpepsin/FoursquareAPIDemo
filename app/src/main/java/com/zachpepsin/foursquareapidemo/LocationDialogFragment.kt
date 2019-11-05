@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.DialogFragment
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -19,14 +20,14 @@ class LocationDialogFragment : DialogFragment() {
     // Use this instance of the interface to deliver action events
     private lateinit var listener: SelectionListener
 
+    private var isLatLong = false
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     /* The activity that creates an instance of this dialog fragment must
      * implement this interface in order to receive event callbacks.
      * Each method passes the DialogFragment in case the host needs to query it. */
     interface SelectionListener {
-        fun onDialogPositiveClick(locationText: String)
-        fun onDialogNegativeClick(dialog: DialogFragment)
+        fun onDialogPositiveClick(locationText: String, isLatLong: Boolean)
     }
 
     // Override the Fragment.onAttach() method to instantiate the LocationDialogFragment
@@ -73,35 +74,10 @@ class LocationDialogFragment : DialogFragment() {
                             Toast.makeText(context, "NULL LOCATION", Toast.LENGTH_SHORT).show()
                             return@addOnSuccessListener
                         }
-
-                        // Get the address, city, and state
-                        val geocoder = Geocoder(context, Locale.getDefault())
-                        val addresses =
-                            geocoder.getFromLocation(location.latitude, location.longitude, 1)
-                        /**
-                         * TODO Foursquare API is very particular about having valid address numbers
-                         * Unfortunately, the google location callback is not and just gives it's
-                         * best estimate at a number.  To avoid failed
-                         * requests, just use city, state and zip.
-                         *
-                         * It would be better to use `ll` instead of `near` in the query and pass in
-                         * the Lat and Long returned to get the most accurate results
-                         */
-                        //val number = addresses[0].subThoroughfare
-                        //val street = addresses[0].thoroughfare
-                        val cityName = addresses[0].locality
-                        val stateName = addresses[0].adminArea
-                        val postalCode = addresses[0].postalCode
-
                         // Build the string and set the EditText
-                        var locationString = ""
-                        //if(number != null ) locationString += number
-                        //if(street != null ) locationString += " $street"
-                        if (cityName != null) locationString += cityName
-                        if (stateName != null) locationString += ", $stateName"
-                        if (postalCode != null) locationString += " $postalCode"
+                        val locationString = "${location.latitude}, ${location.longitude}"
                         view.edit_text_location.setText(locationString)
-                        Toast.makeText(context, locationString, Toast.LENGTH_SHORT).show()
+                        isLatLong = true
                     }
                     .addOnFailureListener {
                         // We were not able to get location (possibly due to permissions)
@@ -113,6 +89,12 @@ class LocationDialogFragment : DialogFragment() {
                     }
             }
 
+            view.edit_text_location.addTextChangedListener {
+                // If the EditText is manually changed then we are not using LatLong
+                // This is in case someone hits the location button, then changes the input after
+                isLatLong = false
+            }
+
             // Use the Builder class for convenient dialog construction
             val builder = AlertDialog.Builder(it)
             // Inflate and set the layout for the dialog
@@ -121,12 +103,9 @@ class LocationDialogFragment : DialogFragment() {
                 .setMessage(R.string.set_location)
                 .setPositiveButton(android.R.string.ok) { _, _ ->
                     // Send the positive button event back to the host activity
-                    listener.onDialogPositiveClick(view.edit_text_location.text.toString())
+                    listener.onDialogPositiveClick(view.edit_text_location.text.toString(), isLatLong)
                 }
-                .setNegativeButton(android.R.string.cancel) { _, _ ->
-                    // Send the negative button event back to the host activity
-                    listener.onDialogNegativeClick(this)
-                }
+                .setCancelable(true)
             // Create the AlertDialog object and return it
             builder.create()
         } ?: throw IllegalStateException("Activity cannot be null")
