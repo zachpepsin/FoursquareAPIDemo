@@ -1,7 +1,7 @@
 # FoursquareAPIDemo
 App demonstrating using the Foursquare API
 
-API: https://developer.github.com/v3/
+API: https://developer.foursquare.com/docs/api
 
 ## Requirements
 - Display all of Googles repositories in a list
