@@ -4,6 +4,9 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.drawable.BitmapDrawable
+import android.graphics.drawable.Drawable
 import android.net.*
 import android.os.AsyncTask
 import android.os.Build
@@ -11,16 +14,20 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.widget.EditText
+import android.widget.ImageView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.toDrawable
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
+import com.squareup.picasso.Picasso
+import com.squareup.picasso.Target
 import kotlinx.android.synthetic.main.activity_item_list.*
 import kotlinx.android.synthetic.main.item_list.*
 import kotlinx.android.synthetic.main.item_list_content.view.*
@@ -477,13 +484,15 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
         override fun onBindViewHolder(holder: ViewHolder, position: Int) {
             val item = values[position]
             holder.textName.text = item.name
-            holder.textName.text = item.name
 
             if (item.address.isNotBlank())
                 holder.textAddress.text = item.address
             else {
                 holder.textAddress.text = parentActivity.getString(R.string.no_address)
             }
+
+            // Set category icon
+            holder.imageCategory.setImageDrawable(BitmapDrawable(parentActivity.resources, item.categoryIcon))
 
             with(holder.itemView) {
                 tag = item
@@ -496,6 +505,7 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
         inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val textName: TextView = view.text_name
             val textAddress: TextView = view.text_address
+            val imageCategory: ImageView = view.image_category
         }
     }
 
@@ -530,13 +540,21 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
                     }
                 }
 
+                // Get the category icon
+                val categoryJSON = jsonVenue.getJSONArray("categories")[0] as JSONObject
+                val iconJSON = categoryJSON.getJSONObject("icon")
+                val prefix = iconJSON.getString("prefix")
+                val suffix = iconJSON.getString("suffix")
+                val imgUrl = "${prefix}100${suffix}"
+                val bitmap = Picasso.with(this@ItemListActivity).load(imgUrl).get()
                 dataset.addItem(
                     jsonVenue.getString("id"),
                     jsonVenue.getString("name"),
-                    address
+                    address,
+                    bitmap
                 )
             }
-            return "temp"
+            return "success"
         }
 
         override fun onPostExecute(result: String?) {

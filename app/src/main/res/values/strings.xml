@@ -6,6 +6,7 @@
     <string name="snackbar_internet_required">Unable to search without an internet connection</string>
     <string name="hint_search_venue">Venue name</string>
     <string name="search_failed">Search failed</string>
+    <string name="content_description_category_icon">Category icon</string>
     <string name="meters">meters</string>
 
     <string name="set_location">Set location</string>

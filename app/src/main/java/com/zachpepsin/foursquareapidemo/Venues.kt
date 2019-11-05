@@ -1,5 +1,7 @@
 package com.zachpepsin.foursquareapidemo
 
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
 import java.util.*
 
 class Venues {
@@ -13,8 +15,8 @@ class Venues {
      */
     private val itemMap: MutableMap<String, VenueItem> = HashMap()
 
-    fun addItem(id: String, name: String, address: String) {
-        val item = VenueItem(id, name, address)
+    fun addItem(id: String, name: String, address: String, categoryIcon: Bitmap) {
+        val item = VenueItem(id, name, address, categoryIcon)
         items.add(item)
         itemMap[item.id] = item
     }
@@ -25,7 +27,8 @@ class Venues {
     data class VenueItem(
         val id: String,
         val name: String,
-        val address: String
+        val address: String,
+        val categoryIcon: Bitmap
     ) {
         override fun toString(): String = name
     }
