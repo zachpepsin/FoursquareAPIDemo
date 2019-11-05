@@ -63,14 +63,25 @@
 
     <TextView
         android:id="@+id/text_rating_header"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/header_rating"
         android:textColor="?android:attr/textColorPrimary"
         android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/space_venue_details1"
-        app:layout_constraintWidth_percent="0.5" />
+        app:layout_constraintTop_toBottomOf="@id/space_venue_details1" />
+
+    <RatingBar
+        android:id="@+id/rating_venue"
+        style="?android:attr/ratingBarStyleIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:numStars="10"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/text_rating_header"
+        tools:rating="7.5" />
 
     <ProgressBar
         android:id="@+id/progress_bar_venue_details"

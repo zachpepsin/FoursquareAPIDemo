@@ -167,7 +167,7 @@ class ItemDetailFragment : Fragment() {
             text_address_body.text = addressText
 
             // Hours
-            if(venueJSON.isNull("hours") || venueJSON.getJSONObject("hours").isNull("status")) {
+            if (venueJSON.isNull("hours") || venueJSON.getJSONObject("hours").isNull("status")) {
                 // No hours information provided
                 text_hours_body.text = getString(R.string.no_hours)
             } else {
@@ -175,11 +175,26 @@ class ItemDetailFragment : Fragment() {
                 text_hours_body.text = venueJSON.getJSONObject("hours").getString("status")
 
                 // Make the text green or red depending on if it is open or not
-                if(venueJSON.getJSONObject("hours").getBoolean("isOpen")) {
-                    text_hours_body.setTextColor(ContextCompat.getColor(context!!, android.R.color.holo_green_dark))
+                if (venueJSON.getJSONObject("hours").getBoolean("isOpen")) {
+                    text_hours_body.setTextColor(
+                        ContextCompat.getColor(
+                            context!!,
+                            android.R.color.holo_green_dark
+                        )
+                    )
                 } else {
-                    text_hours_body.setTextColor(ContextCompat.getColor(context!!, android.R.color.holo_red_dark))
+                    text_hours_body.setTextColor(
+                        ContextCompat.getColor(
+                            context!!,
+                            android.R.color.holo_red_dark
+                        )
+                    )
                 }
+            }
+
+            // Rating
+            if (!venueJSON.isNull("rating")) {
+                rating_venue.rating = venueJSON.getDouble("rating").toFloat()
             }
 
             // Run activity view-related code back on the main thread
