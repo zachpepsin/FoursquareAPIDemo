@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">Foursquare API Demo</string>
-    <string name="title_venue_list">Venues</string>
     <string name="title_item_detail">Venue Detail</string>
 
     <string name="snackbar_internet_required">Unable to search without an internet connection</string>
@@ -13,12 +12,10 @@
     <string name="hint_location">Address, City, or ZIP</string>
     <string name="location_failed">Unable to retrieve location</string>
     <string name="dialog_permission_location">Location access is recommended to list nearby venues</string>
-    <string name="permission_rationale_location">Location access is recommended to use your location to list nearby venues</string>
 
     <string name="dialog_header_venue_search">Search for a venue</string>
     <string name="reset">Reset</string>
 
-    <string name="hint_venue_search">Venue name</string>
     <string name="no_address">No address</string>
     <string name="no_hours">No hours listed</string>
     <string name="no_description">No description</string>

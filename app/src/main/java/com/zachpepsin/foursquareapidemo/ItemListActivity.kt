@@ -4,9 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
 import android.graphics.drawable.BitmapDrawable
-import android.graphics.drawable.Drawable
 import android.net.*
 import android.os.AsyncTask
 import android.os.Build
@@ -21,13 +19,11 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toDrawable
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.snackbar.Snackbar
 import com.squareup.picasso.Picasso
-import com.squareup.picasso.Target
 import kotlinx.android.synthetic.main.activity_item_list.*
 import kotlinx.android.synthetic.main.item_list.*
 import kotlinx.android.synthetic.main.item_list_content.view.*
@@ -58,7 +54,7 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
     private var encodedLocation = "Philadelphia%2C%20PA" // Default search location is Philadelphia
     private var isLatLong = false // True if we are searching by LatLong rather than keywords
 
-    private val PERMISSION_LOCATION = 100
+    private val permissionLocation = 100
 
     // Number of items before the bottom we have to reach when scrolling to start loading next page
     private val visibleThreshold = 2
@@ -235,7 +231,7 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
                         ActivityCompat.requestPermissions(
                             this,
                             arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                            PERMISSION_LOCATION
+                            permissionLocation
                         )
                     }
                 builder.create().show() // Show dialog
@@ -244,7 +240,7 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
                 ActivityCompat.requestPermissions(
                     this,
                     arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                    PERMISSION_LOCATION
+                    permissionLocation
                 )
             }
         } else {
@@ -263,7 +259,7 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
         permissions: Array<String>, grantResults: IntArray
     ) {
         when (requestCode) {
-            PERMISSION_LOCATION -> {
+            permissionLocation -> {
                 // If request is cancelled, the result arrays are empty.
                 // Let the LocationDialogFragment know if permissions are granted
                 val permissionGranted =
@@ -492,7 +488,12 @@ class ItemListActivity : AppCompatActivity(), LocationDialogFragment.SelectionLi
             }
 
             // Set category icon
-            holder.imageCategory.setImageDrawable(BitmapDrawable(parentActivity.resources, item.categoryIcon))
+            holder.imageCategory.setImageDrawable(
+                BitmapDrawable(
+                    parentActivity.resources,
+                    item.categoryIcon
+                )
+            )
 
             with(holder.itemView) {
                 tag = item

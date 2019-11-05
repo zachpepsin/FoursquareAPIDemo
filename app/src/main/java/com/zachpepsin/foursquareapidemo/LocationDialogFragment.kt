@@ -2,7 +2,6 @@ package com.zachpepsin.foursquareapidemo
 
 import android.app.Dialog
 import android.content.Context
-import android.location.Geocoder
 import android.location.Location
 import android.os.Bundle
 import android.view.View
@@ -13,7 +12,6 @@ import androidx.fragment.app.DialogFragment
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.dialog_location.view.*
-import java.util.*
 
 
 class LocationDialogFragment : DialogFragment() {
@@ -103,7 +101,10 @@ class LocationDialogFragment : DialogFragment() {
                 .setMessage(R.string.set_location)
                 .setPositiveButton(android.R.string.ok) { _, _ ->
                     // Send the positive button event back to the host activity
-                    listener.onDialogPositiveClick(view.edit_text_location.text.toString(), isLatLong)
+                    listener.onDialogPositiveClick(
+                        view.edit_text_location.text.toString(),
+                        isLatLong
+                    )
                 }
                 .setCancelable(true)
             // Create the AlertDialog object and return it

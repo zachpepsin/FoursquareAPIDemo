@@ -64,7 +64,7 @@ class ItemDetailFragment : Fragment() {
         activity?.toolbar_layout?.title = venueName
 
         // Execute HTTP Request to load venue details
-        runTest() //TODO replace with non-test function
+        run()
     }
 
     // Runs an API request
@@ -130,21 +130,23 @@ class ItemDetailFragment : Fragment() {
             activity?.toolbar_layout?.title = venueName  // Set the header to the venue name
 
             // Photo to be used in the header
-            val bestPhotoJSON = venueJSON.getJSONObject("bestPhoto")
-            val prefix = bestPhotoJSON.getString("prefix")
-            val suffix = bestPhotoJSON.getString("suffix")
-            val imgUrl = "${prefix}500x300${suffix}"
-            Picasso.with(activity).load(imgUrl).placeholder(android.R.drawable.picture_frame)
-                .into(object : Target {
-                    override fun onBitmapLoaded(bitmap: Bitmap, from: Picasso.LoadedFrom) {
-                        // Load cover photo into CollapsingToolbarLayout of parent activity
-                        val d = BitmapDrawable(resources, bitmap)
-                        activity!!.toolbar_layout.background = d
-                    }
+            if(!venueJSON.isNull("bestPhoto")) {
+                val bestPhotoJSON = venueJSON.getJSONObject("bestPhoto")
+                val prefix = bestPhotoJSON.getString("prefix")
+                val suffix = bestPhotoJSON.getString("suffix")
+                val imgUrl = "${prefix}500x300${suffix}"
+                Picasso.with(activity).load(imgUrl).placeholder(android.R.drawable.picture_frame)
+                    .into(object : Target {
+                        override fun onBitmapLoaded(bitmap: Bitmap, from: Picasso.LoadedFrom) {
+                            // Load cover photo into CollapsingToolbarLayout of parent activity
+                            val d = BitmapDrawable(resources, bitmap)
+                            activity!!.toolbar_layout.background = d
+                        }
 
-                    override fun onBitmapFailed(errorDrawable: Drawable) {}
-                    override fun onPrepareLoad(placeHolderDrawable: Drawable) {}
-                })
+                        override fun onBitmapFailed(errorDrawable: Drawable) {}
+                        override fun onPrepareLoad(placeHolderDrawable: Drawable) {}
+                    })
+            }
 
             // Address
             val locationJSON = venueJSON.getJSONObject("location")
