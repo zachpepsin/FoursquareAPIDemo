@@ -9,6 +9,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.squareup.picasso.Picasso
 import com.squareup.picasso.Target
@@ -121,7 +122,25 @@ class ItemDetailFragment : Fragment() {
             // Populate the views on the page by extracting data from the JSON response
             val venueJSON = result.getJSONObject("venue")
 
-            // Location info
+
+            // Photo to be used in the header
+            val bestPhotoJSON = venueJSON.getJSONObject("bestPhoto")
+            val prefix = bestPhotoJSON.getString("prefix")
+            val suffix = bestPhotoJSON.getString("suffix")
+            val imgUrl = "${prefix}500x300${suffix}"
+            Picasso.with(activity).load(imgUrl).placeholder(android.R.drawable.picture_frame)
+                .into(object : Target {
+                    override fun onBitmapLoaded(bitmap: Bitmap, from: Picasso.LoadedFrom) {
+                        // Load cover photo into CollapsingToolbarLayout of parent activity
+                        val d = BitmapDrawable(resources, bitmap)
+                        activity!!.toolbar_layout.background = d
+                    }
+
+                    override fun onBitmapFailed(errorDrawable: Drawable) {}
+                    override fun onPrepareLoad(placeHolderDrawable: Drawable) {}
+                })
+
+            // Address
             val locationJSON = venueJSON.getJSONObject("location")
             var addressText = ""
             // If we have a formatted address, use that.  Otherwise, build an address string
@@ -145,25 +164,23 @@ class ItemDetailFragment : Fragment() {
                     addressText += "\n${locationJSON.getString("state")}"
                 }
             }
-            text_address_street.text = addressText
+            text_address_body.text = addressText
 
-            // Retrieve the photo to be used in the header
-            val bestPhotoJSON = venueJSON.getJSONObject("bestPhoto")
-            val prefix = bestPhotoJSON.getString("prefix")
-            val suffix = bestPhotoJSON.getString("suffix")
-            val imgUrl = "${prefix}500x300${suffix}"
+            // Hours
+            if(venueJSON.isNull("hours") || venueJSON.getJSONObject("hours").isNull("status")) {
+                // No hours information provided
+                text_hours_body.text = getString(R.string.no_hours)
+            } else {
+                // Use the "status" parameter to simply have a line that descripes the open status
+                text_hours_body.text = venueJSON.getJSONObject("hours").getString("status")
 
-            Picasso.with(activity).load(imgUrl).placeholder(android.R.drawable.picture_frame)
-                .into(object : Target {
-                    override fun onBitmapLoaded(bitmap: Bitmap, from: Picasso.LoadedFrom) {
-                        // Load cover photo into CollapsingToolbarLayout of parent activity
-                        val d = BitmapDrawable(resources, bitmap)
-                        activity!!.toolbar_layout.background = d
-                    }
-
-                    override fun onBitmapFailed(errorDrawable: Drawable) {}
-                    override fun onPrepareLoad(placeHolderDrawable: Drawable) {}
-                })
+                // Make the text green or red depending on if it is open or not
+                if(venueJSON.getJSONObject("hours").getBoolean("isOpen")) {
+                    text_hours_body.setTextColor(ContextCompat.getColor(context!!, android.R.color.holo_green_dark))
+                } else {
+                    text_hours_body.setTextColor(ContextCompat.getColor(context!!, android.R.color.holo_red_dark))
+                }
+            }
 
             // Run activity view-related code back on the main thread
             activity?.runOnUiThread {
